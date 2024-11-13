@@ -1,18 +1,24 @@
 import pygame
 from pytmx.util_pygame import load_pygame
-from entitys.tileGroup import TileGroup
+from tiles.tileGroup import TileGroup
+from scripts.clouds import Clouds
+from scripts.utils import load_image, load_images, Animation
+from scripts.camera import Camera
 
 class Setup():
   def __init__(self):
     pygame.init()
     self.set_display()
+    self.set_assets()
     self.set_sound()
-    self.set_cons("../data/maps/level.tmx")
-    self.setupTiles()
+    self.level = 0
+    self.set_level(self.level)
     self.clock = pygame.time.Clock()
+    self.movement = [False, False]
+    self.screenshake = 0
 
-  def setupTiles(self):
-    # MAP
+  def set_tiles(self,tile_path):
+    self.set_cons(tile_path)
     self.tileMaps = {}
     for layerName in self.tmx_data.layernames:
       layer = self.tmx_data.get_layer_by_name(layerName)
@@ -43,6 +49,8 @@ class Setup():
 
   def set_cons(self,level):
     self.tmx_data = load_pygame(level)
+    self.clouds = Clouds(self.assets['clouds'], count=16)
+    self.movement = [False, False]
     self.screenProps = {
         "tileW": self.tmx_data.tilewidth,
         "tileH": self.tmx_data.tileheight,
@@ -50,4 +58,50 @@ class Setup():
         "hCols" : self.tmx_data.height,
         "screenSize" : (self.tmx_data.tilewidth * self.tmx_data.width,self.tmx_data.tileheight * self.tmx_data.height)
     }
+    self.camera = Camera(
+        self.display.get_width(),
+        self.display.get_height(),
+        self.screenProps
+    )
     self.my_font = pygame.font.SysFont('Bahnschrift', self.screenProps["tileH"])
+
+  def set_assets(self):
+    self.assets = {
+      'decor': load_images('tiles/decor'),
+      'grass': load_images('tiles/grass'),
+      'large_decor': load_images('tiles/large_decor'),
+      'stone': load_images('tiles/stone'),
+      'player': load_image('entities/player.png'),
+      'background': load_image('background.png'),
+      'clouds': load_images('clouds'),
+      'enemy/idle': Animation(load_images('entities/enemy/idle'), img_dur=6),
+      'enemy/run': Animation(load_images('entities/enemy/run'), img_dur=4),
+      'player/idle': Animation(load_images('entities/player/idle'), img_dur=6),
+      'player/run': Animation(load_images('entities/player/run'), img_dur=4),
+      'player/jump': Animation(load_images('entities/player/jump')),
+      'player/slide': Animation(load_images('entities/player/slide')),
+      'player/wall_slide': Animation(load_images('entities/player/wall_slide')),
+      'particle/leaf': Animation(load_images('particles/leaf'), img_dur=20, loop=False),
+      'particle/particle': Animation(load_images('particles/particle'), img_dur=6, loop=False),
+      'gun': load_image('gun.png'),
+      'projectile': load_image('projectile.png'),
+      }
+  def set_level(self,level):
+    self.set_tiles("../data/maps/level.tmx")
+            
+    #self.enemies = []
+    #for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
+    #    if spawner['variant'] == 0:
+    #        self.player.pos = spawner['pos']
+    #        self.player.air_time = 0
+    #    else:
+    #        self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
+        
+    self.projectiles = []
+    self.particles = []
+    self.sparks = []
+    
+    self.scroll = [0, 0]
+    self.render_scroll = self.scroll
+    self.dead = 0
+    self.transition = -30

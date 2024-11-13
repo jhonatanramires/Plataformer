@@ -1,10 +1,9 @@
 import pygame
 import sys
 from pygame.locals import *
-from scripts.setup import Setup  
+from scripts.setup import Setup
+import random   
 
-# Albion online es un mmorpg no lineal en el que escribes tu propia historia sin limitarte a seguir un camino prefijado, explora
-# ..
 class Game(Setup):
   def __init__(self):
     super().__init__()
@@ -12,41 +11,76 @@ class Game(Setup):
 
   def update(self):
     #dt = self.clock.tick(60) / 1000.0
+    self.tileMaps["Player"].update(self.tileMaps["Map"])
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
           pygame.quit()
           sys.exit()
+      if event.type == pygame.KEYUP:
+        if event.key == pygame.K_LEFT:
+            self.movement[0] = False
+        if event.key == pygame.K_RIGHT:
+            self.movement[1] = False
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_LEFT:
-          self.tileMaps["Map"].move(-12,0)
+            self.movement[0] = True
         if event.key == pygame.K_RIGHT:
-          self.tileMaps["Map"].move(12,0)
+            self.movement[1] = True
         if event.key == pygame.K_UP:
-          self.tileMaps["Map"].move(0,-12)
-        if event.key == pygame.K_DOWN:
-          self.tileMaps["Map"].move(0,12) 
-        if event.key == pygame.K_SPACE:
-          idk = self.tileMaps["Map"].tiles_around((100,100))
-          rects = self.tileMaps["Map"].physics_rects_around((100,100))
-          for sprite in idk:
-            sprite.visible = False 
-          for rect in rects:
-            pygame.draw.rect(self.screen,"blue",rect)
-          
+            if self.player.jump():
+                self.sfx['jump'].play()
+        if event.key == pygame.K_x:
+            self.player.dash()          
     self.render()
 
   def render(self):
-    #self.screen.blit(self.background, (0, 0))
-    self.screen.fill((0, 0, 0, 0))
+    # Clear displays
+    self.display.fill((0, 0, 0, 0))
+    self.display_2.blit(self.assets['background'], (0, 0))
+    
+    # Update camera
+    self.camera.update()
+    if self.screenshake:
+        self.camera.apply_screen_shake(self.screenshake)
+        self.screenshake = 0
+    
+    # Get camera offset
+    camera_offset = self.camera.get_offset()
+    
+    # Render clouds with camera offset
+    self.clouds.update()
+    self.clouds.render(self.display_2, offset=camera_offset)
+    
+    # Combine displays
+    self.display_2.blit(self.display, (0, 0))
+    
+    # Scale to screen
+    self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), (0, 0))
+    
+    # Render tiles with camera offset
     for tileName in self.tileMaps.keys():
-      self.tileMaps[tileName].render(self.screen)
-    pygame.draw.circle(self.screen,"red",(100,100),10)
-    #self.tileMaps["Map"].debug(self.screen)
+        for sprite in self.tileMaps[tileName].sprites():
+            if sprite.visible:
+                # Apply camera offset to sprite position
+                try:
+                  draw_rect = self.camera.apply(sprite.rect)
+                  self.screen.blit(sprite.image, draw_rect)
+                except:
+                  self.screen.blit(sprite.image, ((sprite.pos[0] + camera_offset[0]),(sprite.pos[1] + camera_offset[1])))
+    
     pygame.display.update()
-
     self.clock.tick(60)
+
+  def run(self):
+    pygame.mixer.music.load('../data/music.wav')
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1)
+    
+    self.sfx['ambience'].play(-1)
+
+    while True:
+      game.update()
 
 if __name__ == "__main__":
     game = Game()
-    while True:
-      game.update()
+    game.run()
