@@ -4,7 +4,7 @@ from pygame.locals import *
 from scripts.setup import Setup  
 
 # Albion online es un mmorpg no lineal en el que escribes tu propia historia sin limitarte a seguir un camino prefijado, explora
-
+# .
 class Game(Setup):
   def __init__(self):
     super().__init__()
