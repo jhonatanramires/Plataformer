@@ -18,21 +18,30 @@ class Game(Setup):
           sys.exit()
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_LEFT:
-          self.mapTile.move(-12,0)
+          self.tileMaps["Map"].move(-12,0)
         if event.key == pygame.K_RIGHT:
-          self.mapTile.move(12,0)
+          self.tileMaps["Map"].move(12,0)
         if event.key == pygame.K_UP:
-          self.mapTile.move(0,-12)
+          self.tileMaps["Map"].move(0,-12)
         if event.key == pygame.K_DOWN:
-          self.mapTile.move(0,12) 
+          self.tileMaps["Map"].move(0,12) 
+        if event.key == pygame.K_SPACE:
+          idk = self.tileMaps["Map"].tiles_around((100,100))
+          rects = self.tileMaps["Map"].physics_rects_around((100,100))
+          for sprite in idk:
+            sprite.visible = False 
+          for rect in rects:
+            pygame.draw.rect(self.screen,"blue",rect)
           
     self.render()
 
   def render(self):
     #self.screen.blit(self.background, (0, 0))
     self.screen.fill((0, 0, 0, 0))
-    self.mapTile.render(self.screen)
-    #self.mapTile.debug(self.screen)
+    for tileName in self.tileMaps.keys():
+      self.tileMaps[tileName].render(self.screen)
+    pygame.draw.circle(self.screen,"red",(100,100),10)
+    #self.tileMaps["Map"].debug(self.screen)
     pygame.display.update()
 
     self.clock.tick(60)

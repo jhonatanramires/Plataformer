@@ -11,11 +11,14 @@ class Setup():
     self.setupTiles()
     self.clock = pygame.time.Clock()
 
-
   def setupTiles(self):
     # MAP
-    self.mapTile = TileGroup(game="idk",color="red",tile_name="Mapa",tmx_data=self.tmx_data,screenProps=self.screenProps,topleft=True,type="Tile")
-    self.mapTile.setupTiles()
+    self.tileMaps = {}
+    for layerName in self.tmx_data.layernames:
+      layer = self.tmx_data.get_layer_by_name(layerName)
+      if layer in self.tmx_data.visible_layers:
+        self.tileMaps[layerName] = TileGroup(game=self,layer=layer,color=layer.properties['color'],screenProps=self.screenProps,topleft=layer.properties['topleft'],type=layer.properties['type'])
+        self.tileMaps[layerName].setupTiles()
 
   def set_display(self):
     pygame.display.set_caption('ninja game')
