@@ -1,8 +1,10 @@
 import pygame
 import math 
 import random
-from tiles.tile import Tile, Entity
-from entitys.player import Player
+#from tiles.tile import Tile, Entity
+#from entitys.player import Player
+
+from entitys.physicBody import Tile, Entity, Player
 
 class TileGroup(pygame.sprite.Group):
   def __init__(self,game,layer,screenProps,topleft,type,color="Na",scale=1):

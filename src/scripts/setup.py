@@ -87,7 +87,7 @@ class Setup():
       'projectile': load_image('projectile.png'),
       }
   def set_level(self,level):
-    self.set_tiles("../data/maps/level.tmx")
+    self.set_tiles("../data/maps/level2.tmx")
             
     #self.enemies = []
     #for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
